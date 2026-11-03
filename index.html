@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light only">
+<meta name="theme-color" content="#ffffff">
+<title>Nihongo Step デモ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light only;
+    --bg: #ffffff;
+    --bg-soft: #f5f7fc;
+    --line: #e4e8f1;
+    --text: #1f2433;
+    --muted: #697089;
+    --accent: #3d5bd9;
+    --accent-soft: #e9eefd;
+    --accent2: #ec5b7a;
+    --accent2-soft: #fdeaef;
+    --ok: #1f9d6a;
+    --ok-soft: #e3f6ec;
+    --ng: #d64545;
+    --ng-soft: #fdeaea;
+    --gold: #e0a100;
+    --shadow: 0 8px 24px rgba(30, 45, 110, .08);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; background: #ffffff; color: var(--text); }
+  body {
+    font-family: "Noto Sans JP", system-ui, -apple-system, "Hiragino Sans", sans-serif;
+    font-size: 15px; line-height: 1.6; min-height: 100vh;
+  }
+  /* PCでもスマホの枠で中央に出す */
+  .stage { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #ffffff; }
+  .phone { width: 100%; max-width: 390px; height: 100vh; height: 100dvh; background: var(--bg); position: relative; overflow: hidden; display: flex; flex-direction: column; }
+  @media (min-width: 560px) {
+    .stage { background: linear-gradient(180deg, #f8faff 0%, #eef2fc 100%); padding: 24px 16px; }
+    .phone { height: 844px; max-height: calc(100vh - 48px); border-radius: 40px; border: 10px solid #1c2030; box-shadow: 0 30px 60px rgba(30, 45, 110, .22); }
+    .phone::before { content: ""; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 110px; height: 26px; background: #1c2030; border-radius: 0 0 16px 16px; z-index: 50; }
+  }
+  .topbar { padding: 44px 16px 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; background: var(--bg); border-bottom: 1px solid var(--line); flex: none; }
+  .brand { font-weight: 700; font-size: 18px; letter-spacing: .03em; color: var(--accent); display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .logo { width: 28px; height: 28px; border-radius: 9px; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; }
+  .top-right { display: flex; gap: 6px; align-items: center; }
+  .pill { border: 0; background: var(--accent-soft); color: var(--accent); font-weight: 700; padding: 5px 11px; border-radius: 999px; font-size: 13px; cursor: pointer; font-family: inherit; white-space: nowrap; }
+  .back { border: 0; background: transparent; color: var(--accent); font-weight: 500; font-size: 15px; cursor: pointer; padding: 4px 0; font-family: inherit; }
+  .screens { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .screen { padding: 16px 16px 28px; animation: fade .25s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: none; } }
+  h1 { font-size: 20px; margin: 4px 0 6px; font-weight: 700; }
+  h2 { font-size: 16px; margin: 20px 0 8px; font-weight: 700; }
+  p { margin: 6px 0; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .card { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); margin-bottom: 12px; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 0; border-radius: 14px; padding: 13px 18px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; background: var(--accent); color: #fff; transition: transform .08s ease, opacity .2s; }
+  .btn:active { transform: scale(.97); }
+  .btn.full { width: 100%; }
+  .btn.ghost { background: var(--accent-soft); color: var(--accent); }
+  .btn.pink { background: var(--accent2); }
+  .btn.outline { background: #fff; color: var(--text); border: 1px solid var(--line); }
+  .btn.danger { background: #fff; color: var(--ng); border: 1px solid #f1c9c9; }
+  .btn.sm { padding: 8px 12px; font-size: 13px; border-radius: 10px; }
+  .btn:disabled { opacity: .4; cursor: default; }
+  .row { display: flex; gap: 8px; }
+  .row > * { flex: 1; }
+  .hero { text-align: center; padding: 28px 0 14px; }
+  .hero .big { width: 84px; height: 84px; border-radius: 26px; margin: 0 auto 14px; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; font-size: 40px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow); }
+  .hero h1 { font-size: 26px; color: var(--accent); letter-spacing: .04em; }
+  input[type=text], textarea { width: 100%; font-family: inherit; font-size: 16px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: var(--text); outline: none; }
+  input[type=text]:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+  .chip { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 6px 14px; font-size: 14px; cursor: pointer; font-family: inherit; color: var(--text); }
+  .progress { height: 8px; background: var(--bg-soft); border-radius: 999px; overflow: hidden; margin: 6px 0; }
+  .progress i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 999px; transition: width .4s ease; }
+  .lesson { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+  .lesson .ico { width: 54px; height: 54px; border-radius: 16px; background: var(--bg-soft); display: flex; align-items: center; justify-content: center; font-size: 28px; flex: none; }
+  .lesson .info { flex: 1; min-width: 0; }
+  .lesson .name { font-weight: 700; }
+  .lesson.locked { opacity: .5; cursor: default; }
+  .tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 700; white-space: nowrap; }
+  .tag.ok { background: var(--ok-soft); color: var(--ok); }
+  .tag.go { background: var(--accent-soft); color: var(--accent); }
+  .tag.lock { background: #f0f1f5; color: #8b90a3; }
+  .resume { background: linear-gradient(135deg, var(--accent), #6a52e0); color: #fff; border: 0; }
+  .resume .muted { color: rgba(255,255,255,.85); }
+  /* 学習画面 */
+  .stepbar { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .stepbar .progress { flex: 1; margin: 0; }
+  .kind { font-size: 12px; font-weight: 700; color: var(--accent2); letter-spacing: .04em; }
+  .prompt { font-size: 18px; font-weight: 700; margin: 4px 0 14px; }
+  .flash { perspective: 1000px; height: 300px; cursor: pointer; margin: 6px 0 14px; }
+  .flash-inner { position: relative; width: 100%; height: 100%; transition: transform .5s; transform-style: preserve-3d; }
+  .flash.flipped .flash-inner { transform: rotateY(180deg); }
+  .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 22px; border: 1px solid var(--line); box-shadow: var(--shadow); display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fff; padding: 16px; text-align: center; }
+  .face.back { transform: rotateY(180deg); background: var(--accent-soft); }
+  .emoji-xl { font-size: 92px; line-height: 1.1; }
+  .emoji-lg { font-size: 48px; line-height: 1.1; }
+  .jp-xl { font-size: 34px; font-weight: 700; margin-top: 8px; }
+  .romaji { color: var(--muted); font-size: 15px; }
+  .speakbtn { width: 64px; height: 64px; border-radius: 50%; border: 0; background: var(--accent); color: #fff; font-size: 28px; cursor: pointer; box-shadow: 0 8px 20px rgba(61,91,217,.3); }
+  .speakbtn.big { width: 96px; height: 96px; font-size: 40px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .opt { border: 2px solid var(--line); background: #fff; border-radius: 18px; padding: 14px 8px; cursor: pointer; font-family: inherit; font-size: 16px; color: var(--text); text-align: center; transition: transform .08s, border-color .15s, background .15s; min-height: 64px; }
+  .opt:active { transform: scale(.97); }
+  .opt.pic { font-size: 56px; padding: 10px; min-height: 110px; }
+  .opt.correct { border-color: var(--ok); background: var(--ok-soft); }
+  .opt.wrong { border-color: var(--ng); background: var(--ng-soft); }
+  .opt.sel { border-color: var(--accent); background: var(--accent-soft); }
+  .opt.done { opacity: .5; border-color: var(--ok); background: var(--ok-soft); cursor: default; }
+  .opt:disabled { cursor: default; }
+  .list .opt { width: 100%; margin-bottom: 10px; text-align: left; padding: 14px 16px; }
+  .feedback { margin: 12px 0; padding: 12px 14px; border-radius: 14px; font-weight: 700; display: none; }
+  .feedback.ok { display: block; background: var(--ok-soft); color: var(--ok); }
+  .feedback.ng { display: block; background: var(--ng-soft); color: var(--ng); }
+  .footer-next { position: sticky; bottom: 0; background: linear-gradient(180deg, rgba(255,255,255,0), #fff 30%); padding-top: 14px; }
+  .matchcols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .matchcols .opt { width: 100%; margin-bottom: 10px; }
+  .recctl { display: flex; justify-content: center; gap: 6px; margin: 16px 0 8px; flex-wrap: wrap; }
+  .roundbtn { width: 68px; display: flex; flex-direction: column; align-items: center; gap: 6px; border: 0; background: transparent; cursor: pointer; font-family: inherit; color: var(--text); font-size: 12px; font-weight: 500; }
+  .roundbtn span.c { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; background: var(--accent-soft); color: var(--accent); }
+  .roundbtn.rec span.c { background: var(--accent2); color: #fff; }
+  .roundbtn.rec.on span.c { animation: pulse 1s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(236,91,122,.5);} 50% { box-shadow: 0 0 0 12px rgba(236,91,122,0);} }
+  .roundbtn:disabled { opacity: .35; cursor: default; }
+  .note { background: var(--bg-soft); border-radius: 12px; padding: 10px 12px; font-size: 12px; color: var(--muted); margin: 12px 0; }
+  .stars { font-size: 44px; letter-spacing: 6px; text-align: center; margin: 10px 0; }
+  .wordlist { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .wordlist .opt { min-height: 84px; padding: 8px 4px; font-size: 13px; }
+  .wordlist .opt .e { font-size: 30px; display: block; }
+  /* 教師画面 */
+  .item-edit { border: 1px solid var(--line); border-radius: 14px; padding: 10px; margin-bottom: 10px; background: #fff; }
+  .item-edit .r { display: grid; grid-template-columns: 64px 1fr 1fr; gap: 6px; margin-bottom: 6px; }
+  .item-edit .r2 { display: grid; grid-template-columns: 1fr; gap: 6px; }
+  .item-edit input[type=text] { font-size: 14px; padding: 8px 10px; border-radius: 10px; }
+  .item-edit input.emo { text-align: center; font-size: 22px; padding: 4px; }
+  .item-edit .acts { display: flex; gap: 6px; margin-top: 8px; align-items: center; flex-wrap: wrap; }
+  .toggles label { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .toggles input { width: 20px; height: 20px; accent-color: var(--accent); }
+  .tabbar { flex: none; display: flex; border-top: 1px solid var(--line); background: #fff; padding: 6px 4px 18px; }
+  .tab { flex: 1; border: 0; background: transparent; font-family: inherit; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11px; font-weight: 700; color: #8b90a3; cursor: pointer; padding: 6px 0; }
+  .tab .i { font-size: 22px; filter: grayscale(1); opacity: .7; }
+  .tab.on { color: var(--accent); }
+  .tab.on .i { filter: none; opacity: 1; }
+  .demo-note { flex: none; text-align: center; font-size: 11px; color: var(--muted); padding: 6px 12px; background: var(--bg-soft); border-top: 1px solid var(--line); }
+  .toast { position: absolute; left: 50%; top: 96px; transform: translateX(-50%); background: #1f2433; color: #fff; padding: 10px 16px; border-radius: 999px; font-size: 13px; z-index: 60; opacity: 0; transition: opacity .25s; pointer-events: none; white-space: nowrap; }
+  .toast.show { opacity: 1; }
+  audio { display: none; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="phone" id="phone">
+    <div class="topbar" id="topbar"></div>
+    <div class="screens" id="screens"></div>
+    <div class="demo-note" id="demoNote"></div>
+    <nav class="tabbar" id="tabbar"></nav>
+    <div class="toast" id="toast"></div>
+  </div>
+</div>
+<script>
+'use strict';
+/* =========================================================
+   Nihongo Step デモ（静的・サーバー不要）
+   - 教材(レッスン)は JSON。教師画面で追加・編集すると、問題は教材から自動で作られる
+   - 学習者・進度・教材はブラウザ内(localStorage)に保存（本番はサーバーのDB）
+   ========================================================= */
+
+// ---------- 見本の教材 ----------
+const SAMPLE = [
+  { id: 'greet', icon: '👋', title: { ja: 'あいさつ', en: 'Greetings' },
+    acts: { flash: true, listen: true, quiz: true, match: true, speak: true },
+    items: [
+      { e: '🌅', jp: 'おはよう', ro: 'ohayou', mean: 'Good morning' },
+      { e: '☀️', jp: 'こんにちは', ro: 'konnichiwa', mean: 'Hello' },
+      { e: '🌙', jp: 'こんばんは', ro: 'konbanwa', mean: 'Good evening' },
+      { e: '🙏', jp: 'ありがとう', ro: 'arigatou', mean: 'Thank you' },
+      { e: '👋', jp: 'さようなら', ro: 'sayounara', mean: 'Goodbye' }
+    ] },
+  { id: 'num', icon: '🔢', title: { ja: '数字', en: 'Numbers' },
+    acts: { flash: true, listen: true, quiz: true, match: true, speak: true },
+    items: [
+      { e: '1️⃣', jp: 'いち', ro: 'ichi', mean: 'one' },
+      { e: '2️⃣', jp: 'に', ro: 'ni', mean: 'two' },
+      { e: '3️⃣', jp: 'さん', ro: 'san', mean: 'three' },
+      { e: '4️⃣', jp: 'よん', ro: 'yon', mean: 'four' },
+      { e: '5️⃣', jp: 'ご', ro: 'go', mean: 'five' }
+    ] },
+  { id: 'food', icon: '🍙', title: { ja: '食べ物', en: 'Food' },
+    acts: { flash: true, listen: true, quiz: true, match: true, speak: true },
+    items: [
+      { e: '🍎', jp: 'りんご', ro: 'ringo', mean: 'apple' },
+      { e: '🍣', jp: 'すし', ro: 'sushi', mean: 'sushi' },
+      { e: '🍜', jp: 'ラーメン', ro: 'raamen', mean: 'ramen' },
+      { e: '🍞', jp: 'パン', ro: 'pan', mean: 'bread' },
+      { e: '🥚', jp: 'たまご', ro: 'tamago', mean: 'egg' },
+      { e: '🍙', jp: 'おにぎり', ro: 'onigiri', mean: 'rice ball' }
+    ] }
+];
+
+// ---------- 表示言語 ----------
+const I18N = {
+  ja: {
+    appSub: '外国人のための日本語学習（デモ）', yourName: 'あなたの名前', namePh: '例：Maria', start: 'はじめる',
+    or: 'または、保存されている学習者でログイン', loginNote: 'デモ：名前だけの簡易ログイン。データはこの端末のブラウザに保存されます。本番はメール＋パスワード等のアカウントで、どの端末からでも続きから学べます。',
+    tLessons: 'レッスン', tSpeak: '発音', tProgress: '進度', tTeacher: '教師',
+    hello: 'こんにちは、{n} さん', overall: '全体の進み具合', resume: '続きから学ぶ', resumeOf: '{t}　ステップ {s}/{a}',
+    lessons: 'レッスン一覧', done: '完了', inprog: '学習中', locked: 'ロック中', newL: '未学習', words: '{n}語',
+    lockedMsg: '前のレッスンを終えると開きます', quit: '← 中断', saved: '進度を保存しました',
+    kFlash: 'フラッシュカード', kListen: '音声 → 絵を選ぶ', kQuiz: '選択式クイズ', kMatch: '絵と文字のマッチング', kSpeak: '発音の練習',
+    pFlash: 'カードをタップして裏返そう', pListen: '音声を聞いて、正しい絵を選んでください', pQuiz: 'この言葉の意味は？', pMatch: '絵と、合う言葉を順にタップしてください', pSpeak: 'お手本を聞いて、録音して聞き比べよう',
+    next: '次へ', prevCard: '前へ', nextCard: '次のカード', finishDeck: 'カードを終える', check: '正解！', wrong: '残念…正解は「{a}」',
+    listenAgain: 'もう一度聞く', model: 'お手本', record: '録音', stop: '停止', mine: '自分の声', compare: '聞き比べ',
+    recNote: '録音はこの端末の中だけで再生します（サーバーに送りません）。', micNg: 'マイクが使えません。ブラウザの設定でマイクを許可してください。',
+    resultT: 'レッスン完了！', score: '正解 {c} / {t}', nextLesson: '次のレッスンへ', toHome: 'レッスン一覧へ', retry: 'もう一度',
+    practiceT: '発音の練習', practiceSub: '言葉を選んで、お手本と自分の声を聞き比べましょう',
+    progT: '学習の記録', learner: '学習者', logout: 'ログアウト', resetProg: '進度をリセット', stepsDone: '{d}/{a} ステップ', best: '最高 {c}/{t}',
+    teachT: '教材の管理（教師用）', teachSub: '教材を入れ替えるだけでレッスンが増えます。問題（クイズ・絵選び・マッチング）は教材から自動で作られます。',
+    addLesson: '＋ レッスンを追加', edit: '編集', items: '単語・フレーズ', addItem: '＋ 単語を追加', del: '削除',
+    titleJa: 'タイトル（日本語）', titleEn: 'タイトル（英語）', iconL: 'アイコン', actsL: 'このレッスンで使う学習', save: '保存する', cancel: '戻る', delLesson: 'このレッスンを削除',
+    fE: '絵', fJp: '日本語', fRo: 'ローマ字', fMean: '意味（英語）', recModel: 'お手本を録音', playModel: '再生', clearModel: '音声を消す', hasRec: '録音あり', tts: '読み上げ',
+    jsonT: '教材データ（JSON）', jsonSub: '教材はこの形式の1ファイルです。差し替えて「読み込む」と全レッスンが入れ替わります。', exportB: '書き出す', importB: '読み込む', resetB: '見本の教材に戻す',
+    savedL: 'レッスンを保存しました', imported: '教材を読み込みました', badJson: 'JSONの形式が正しくありません', confirmDel: 'このレッスンを削除しますか？', confirmReset: '見本の教材に戻しますか？',
+    needItems: '単語を2つ以上入れてください', demoNote: 'デモ版：音声はブラウザの読み上げ／保存は端末内。本番はサーバー保存・教師の録音音声に対応します。',
+    newLessonTitle: '新しいレッスン', modelRecording: '録音中…もう一度押すと止まります'
+  },
+  en: {
+    appSub: 'Learn Japanese — demo', yourName: 'Your name', namePh: 'e.g. Maria', start: 'Start',
+    or: 'Or log in as a saved learner', loginNote: 'Demo: name-only login. Data is saved in this browser. The real app uses accounts (email + password) so you can continue on any device.',
+    tLessons: 'Lessons', tSpeak: 'Speak', tProgress: 'Progress', tTeacher: 'Teacher',
+    hello: 'Hello, {n}', overall: 'Overall progress', resume: 'Continue learning', resumeOf: '{t} — step {s}/{a}',
+    lessons: 'Lessons', done: 'Done', inprog: 'In progress', locked: 'Locked', newL: 'New', words: '{n} words',
+    lockedMsg: 'Finish the previous lesson to unlock', quit: '← Quit', saved: 'Progress saved',
+    kFlash: 'Flashcards', kListen: 'Listen → pick the picture', kQuiz: 'Multiple choice', kMatch: 'Match picture & word', kSpeak: 'Pronunciation',
+    pFlash: 'Tap the card to flip it', pListen: 'Listen and choose the right picture', pQuiz: 'What does this mean?', pMatch: 'Tap a picture, then the matching word', pSpeak: 'Listen, record yourself, and compare',
+    next: 'Next', prevCard: 'Back', nextCard: 'Next card', finishDeck: 'Finish cards', check: 'Correct!', wrong: 'Not quite… the answer is "{a}"',
+    listenAgain: 'Listen again', model: 'Model', record: 'Record', stop: 'Stop', mine: 'My voice', compare: 'Compare',
+    recNote: 'Recordings stay on this device only (never uploaded).', micNg: 'Microphone unavailable. Please allow microphone access in your browser.',
+    resultT: 'Lesson complete!', score: '{c} / {t} correct', nextLesson: 'Next lesson', toHome: 'Back to lessons', retry: 'Try again',
+    practiceT: 'Pronunciation practice', practiceSub: 'Pick a word and compare the model with your own voice',
+    progT: 'Your progress', learner: 'Learner', logout: 'Log out', resetProg: 'Reset progress', stepsDone: '{d}/{a} steps', best: 'Best {c}/{t}',
+    teachT: 'Materials (for teachers)', teachSub: 'Add lessons just by adding materials. Quizzes, picture choices and matching are generated automatically.',
+    addLesson: '+ Add lesson', edit: 'Edit', items: 'Words & phrases', addItem: '+ Add word', del: 'Delete',
+    titleJa: 'Title (Japanese)', titleEn: 'Title (English)', iconL: 'Icon', actsL: 'Activities in this lesson', save: 'Save', cancel: 'Back', delLesson: 'Delete this lesson',
+    fE: 'Pic', fJp: 'Japanese', fRo: 'Romaji', fMean: 'Meaning (EN)', recModel: 'Record model', playModel: 'Play', clearModel: 'Remove audio', hasRec: 'recorded', tts: 'TTS',
+    jsonT: 'Material data (JSON)', jsonSub: 'All materials are one file in this format. Replace it and press "Import" to swap every lesson.', exportB: 'Export', importB: 'Import', resetB: 'Restore sample materials',
+    savedL: 'Lesson saved', imported: 'Materials imported', badJson: 'Invalid JSON', confirmDel: 'Delete this lesson?', confirmReset: 'Restore the sample materials?',
+    needItems: 'Please add at least 2 words', demoNote: 'Demo: audio uses browser speech; data stays on this device. The real app saves to a server and supports teacher-recorded audio.',
+    newLessonTitle: 'New lesson', modelRecording: 'Recording… press again to stop'
+  }
+};
+const ACT_KEYS = ['flash', 'listen', 'quiz', 'match', 'speak'];
+const ACT_LABEL = { flash: 'kFlash', listen: 'kListen', quiz: 'kQuiz', match: 'kMatch', speak: 'kSpeak' };
+
+// ---------- 保存 ----------
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { toast('保存容量が不足しています / Storage full'); return false; } }
+};
+const S = {
+  lang: LS.get('ng_lang', 'ja'),
+  content: LS.get('ng_content', null) || JSON.parse(JSON.stringify(SAMPLE)),
+  users: LS.get('ng_users', {}),
+  user: LS.get('ng_current', null),
+  tab: 'lessons',
+  run: null,      // 学習中のレッスン状態
+  editing: null   // 教師が編集中のレッスン
+};
+if (S.user && !S.users[S.user]) S.user = null;
+function saveContent() { return LS.set('ng_content', S.content); }
+function saveUsers() { LS.set('ng_users', S.users); LS.set('ng_current', S.user); }
+
+function t(key, vars) {
+  let s = (I18N[S.lang] && I18N[S.lang][key]) || I18N.ja[key] || key;
+  if (vars) for (const k in vars) s = s.split('{' + k + '}').join(vars[k]);
+  return s;
+}
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function $(sel, root) { return (root || document).querySelector(sel); }
+function lessonTitle(l) { return (l.title && (l.title[S.lang] || l.title.ja || l.title.en)) || '—'; }
+let toastTimer = null;
+function toast(msg) { const el = $('#toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 1600); }
+
+// ---------- 音声（お手本） ----------
+let jaVoice = null;
+function pickVoice() {
+  if (!('speechSynthesis' in window)) return;
+  const vs = speechSynthesis.getVoices();
+  jaVoice = vs.find(v => /^ja/i.test(v.lang)) || null;
+}
+if ('speechSynthesis' in window) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+let currentAudio = null;
+function playItem(item, onend) {
+  let ended = false;
+  const finish = () => { if (!ended) { ended = true; if (onend) onend(); } };
+  if (currentAudio) { try { currentAudio.pause(); } catch (e) {} currentAudio = null; }
+  if (item.audio) {   // 教師が録音したお手本があればそれを使う
+    const a = new Audio(item.audio); currentAudio = a;
+    a.onended = finish; a.onerror = finish;
+    a.play().catch(finish);
+    setTimeout(finish, 6000);
+    return;
+  }
+  if (!('speechSynthesis' in window)) { setTimeout(finish, 600); return; }
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(item.jp);
+    u.lang = 'ja-JP'; u.rate = 0.85; if (jaVoice) u.voice = jaVoice;
+    u.onend = finish; u.onerror = finish;
+    speechSynthesis.speak(u);
+  } catch (e) { finish(); return; }
+  setTimeout(finish, 900 + item.jp.length * 350);   // 読み上げ終了が通知されない端末向けの保険
+}
+
+// ---------- 録音（MediaRecorder・端末内のみ） ----------
+const Rec = {
+  mr: null, stream: null, chunks: [], timer: null,
+  supported() { return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder); },
+  async start(onDone, maxMs) {
+    if (!this.supported()) throw new Error('unsupported');
+    this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    this.chunks = [];
+    this.mr = new MediaRecorder(this.stream);
+    this.mr.ondataavailable = e => { if (e.data && e.data.size) this.chunks.push(e.data); };
+    this.mr.onstop = () => {
+      const blob = new Blob(this.chunks, { type: this.mr.mimeType || 'audio/webm' });
+      this.stream.getTracks().forEach(tr => tr.stop());
+      this.mr = null; clearTimeout(this.timer);
+      onDone(blob);
+    };
+    this.mr.start();
+    this.timer = setTimeout(() => this.stop(), maxMs || 5000);
+  },
+  stop() { if (this.mr && this.mr.state !== 'inactive') this.mr.stop(); },
+  active() { return !!(this.mr && this.mr.state === 'recording'); }
+};
+
+// ---------- 問題の自動生成（教材 → ステップ） ----------
+function hashStr(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+function rngOf(seed) { let a = seed; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let r = Math.imul(a ^ a >>> 15, 1 | a); r = r + Math.imul(r ^ r >>> 7, 61 | r) ^ r; return ((r ^ r >>> 14) >>> 0) / 4294967296; }; }
+function shuffle(arr, rnd) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function buildSteps(lesson) {
+  const items = (lesson.items || []).filter(it => it.jp);
+  const acts = lesson.acts || {};
+  // 同じ教材なら同じ順番＝途中から再開しても問題が変わらない
+  const rnd = rngOf(hashStr(lesson.id + '|' + items.map(i => i.jp).join(',')));
+  const idx = items.map((_, i) => i);
+  const choices = (target, n) => shuffle([target].concat(shuffle(idx.filter(i => i !== target), rnd).slice(0, n - 1)), rnd);
+  const steps = [];
+  if (acts.flash && items.length) steps.push({ t: 'flash' });
+  if (items.length >= 2) {
+    if (acts.listen) shuffle(idx, rnd).slice(0, 3).forEach(i => steps.push({ t: 'listen', a: i, o: choices(i, Math.min(4, items.length)) }));
+    if (acts.quiz) shuffle(idx, rnd).slice(0, 3).forEach(i => steps.push({ t: 'quiz', a: i, o: choices(i, Math.min(4, items.length)) }));
+    if (acts.match) { const p = shuffle(idx, rnd).slice(0, 4); steps.push({ t: 'match', p, r: shuffle(p, rnd) }); }
+  }
+  if (acts.speak && items.length) shuffle(idx, rnd).slice(0, 2).forEach(i => steps.push({ t: 'speak', a: i }));
+  return { items, steps };
+}
+const GRADED = { listen: 1, quiz: 1, match: 1 };
+
+// ---------- 進度 ----------
+function prog() { return S.users[S.user] || (S.users[S.user] = { lessons: {}, last: null, created: Date.now() }); }
+function lp(id) { const p = prog(); return p.lessons[id] || (p.lessons[id] = { step: 0, correct: 0, done: false, best: null }); }
+function lessonState(i) {
+  const l = S.content[i]; const p = prog().lessons[l.id];
+  if (p && p.done) return 'done';
+  if (p && p.step > 0) return 'inprog';
+  if (i === 0) return 'new';
+  const prev = prog().lessons[S.content[i - 1].id];
+  return prev && prev.done ? 'new' : 'locked';
+}
+
+// ---------- 描画の土台 ----------
+function render() {
+  document.documentElement.lang = S.lang;
+  $('#demoNote').textContent = t('demoNote');
+  renderTop(); renderTabs();
+  const sc = $('#screens');
+  let html = '';
+  if (!S.user) html = viewLogin();
+  else if (S.run) html = viewRun();
+  else if (S.tab === 'lessons') html = viewHome();
+  else if (S.tab === 'speak') html = viewPractice();
+  else if (S.tab === 'progress') html = viewProgress();
+  else if (S.tab === 'teacher') html = S.editing ? viewEdit() : viewTeacher();
+  sc.innerHTML = '<div class="screen" data-screen="' + (S.run ? 'run' : (S.user ? S.tab : 'login')) + '">' + html + '</div>';
+  bind(sc);
+}
+function renderTop() {
+  const left = S.run ? '<button class="back" data-act="quit">' + t('quit') + '</button>'
+    : '<div class="brand"><span class="logo">あ</span>Nihongo Step</div>';
+  const langBtn = '<button class="pill" data-act="lang" aria-label="language">' + (S.lang === 'ja' ? '🌐 EN' : '🌐 日本語') + '</button>';
+  const userBtn = S.user && !S.run ? '<button class="pill" data-act="tab" data-tab="progress">👤 ' + esc(S.user) + '</button>' : '';
+  $('#topbar').innerHTML = left + '<div class="top-right">' + langBtn + userBtn + '</div>';
+  bind($('#topbar'));
+}
+function renderTabs() {
+  const bar = $('#tabbar');
+  if (!S.user || S.run) { bar.style.display = 'none'; return; }
+  bar.style.display = 'flex';
+  const tabs = [['lessons', '📚', 'tLessons'], ['speak', '🎙️', 'tSpeak'], ['progress', '📈', 'tProgress'], ['teacher', '🧑‍🏫', 'tTeacher']];
+  bar.innerHTML = tabs.map(([k, i, l]) => '<button class="tab' + (S.tab === k ? ' on' : '') + '" data-act="tab" data-tab="' + k + '"><span class="i">' + i + '</span>' + t(l) + '</button>').join('');
+  bind(bar);
+}
+
+// ---------- ログイン ----------
+function viewLogin() {
+  const names = Object.keys(S.users);
+  return '<div class="hero"><div class="big">あ</div><h1>Nihongo Step</h1><p class="muted">' + t('appSub') + '</p></div>'
+    + '<div class="card"><label class="muted" for="nameIn">' + t('yourName') + '</label>'
+    + '<input type="text" id="nameIn" maxlength="20" placeholder="' + esc(t('namePh')) + '" autocomplete="off" style="margin:6px 0 12px">'
+    + '<button class="btn full" data-act="login">' + t('start') + '</button></div>'
+    + (names.length ? '<p class="muted">' + t('or') + '</p><div class="chips">' + names.map(n => '<button class="chip" data-act="loginAs" data-name="' + esc(n) + '">👤 ' + esc(n) + '</button>').join('') + '</div>' : '')
+    + '<div class="note">' + t('loginNote') + '</div>';
+}
+
+// ---------- ホーム（レッスン一覧） ----------
+function viewHome() {
+  const total = S.content.reduce((a, l) => a + buildSteps(l).steps.length, 0);
+  let doneSteps = 0;
+  S.content.forEach(l => { const p = prog().lessons[l.id]; const n = buildSteps(l).steps.length; if (p) doneSteps += p.done ? n : Math.min(p.step, n); });
+  const pct = total ? Math.round(doneSteps / total * 100) : 0;
+  let resume = '';
+  const lastId = prog().last; const li = S.content.findIndex(l => l.id === lastId);
+  if (li >= 0) {
+    const l = S.content[li]; const p = lp(l.id); const n = buildSteps(l).steps.length;
+    if (p.step > 0 && p.step < n) resume = '<div class="card resume" data-act="open" data-i="' + li + '" style="cursor:pointer"><b>▶ ' + t('resume') + '</b><p class="muted">' + esc(t('resumeOf', { t: lessonTitle(l), s: p.step + 1, a: n })) + '</p></div>';
+  }
+  const list = S.content.map((l, i) => {
+    const st = lessonState(i); const n = buildSteps(l).steps.length; const p = prog().lessons[l.id];
+    const tag = { done: '<span class="tag ok">✓ ' + t('done') + '</span>', inprog: '<span class="tag go">' + t('inprog') + '</span>', new: '<span class="tag go">' + t('newL') + '</span>', locked: '<span class="tag lock">🔒 ' + t('locked') + '</span>' }[st];
+    const w = p ? (p.done ? 100 : Math.round(Math.min(p.step, n) / Math.max(n, 1) * 100)) : 0;
+    return '<div class="card lesson' + (st === 'locked' ? ' locked' : '') + '" data-act="open" data-i="' + i + '" data-lesson="' + esc(l.id) + '">'
+      + '<div class="ico">' + esc(l.icon || '📘') + '</div><div class="info"><div class="name">' + (i + 1) + '. ' + esc(lessonTitle(l)) + '</div>'
+      + '<div class="muted">' + t('words', { n: (l.items || []).length }) + ' ・ ' + tag + '</div><div class="progress"><i style="width:' + w + '%"></i></div></div></div>';
+  }).join('');
+  return '<h1>' + esc(t('hello', { n: S.user })) + '</h1><p class="muted">' + t('overall') + ' ' + pct + '%</p><div class="progress"><i style="width:' + pct + '%"></i></div><div style="height:10px"></div>'
+    + resume + '<h2>' + t('lessons') + '</h2>' + list;
+}
+
+// ---------- 学習の実行 ----------
+function openLesson(i) {
+  if (lessonState(i) === 'locked') { toast(t('lockedMsg')); return; }
+  const l = S.content[i]; const b = buildSteps(l);
+  if (!b.steps.length) { toast(t('needItems')); return; }
+  const p = lp(l.id);
+  if (p.step >= b.steps.length) { p.step = 0; p.correct = 0; }   // 教材が減った時の保険
+  prog().last = l.id; saveUsers();
+  S.run = { i, lesson: l, items: b.items, steps: b.steps, answered: false, card: 0, flipped: false, sel: null, matched: [], miss: 0, recUrl: null, result: false };
+  render();
+}
+function viewRun() {
+  const R = S.run; const p = lp(R.lesson.id);
+  if (R.result) return viewResult();
+  const st = R.steps[p.step]; const n = R.steps.length;
+  const head = '<div class="stepbar"><div class="progress"><i style="width:' + Math.round(p.step / n * 100) + '%"></i></div><span class="muted">' + (p.step + 1) + '/' + n + '</span></div>'
+    + '<div class="kind">' + t(ACT_LABEL[st.t]) + '</div>';
+  const nextBtn = (enabled, label) => '<div class="footer-next"><button class="btn full" data-act="next" ' + (enabled ? '' : 'disabled') + '>' + (label || t('next')) + '</button></div>';
+  if (st.t === 'flash') {
+    const it = R.items[R.card]; const last = R.card === R.items.length - 1;
+    return head + '<div class="prompt">' + t('pFlash') + ' <span class="muted">(' + (R.card + 1) + '/' + R.items.length + ')</span></div>'
+      + '<div class="flash' + (R.flipped ? ' flipped' : '') + '" data-act="flip" id="flash"><div class="flash-inner">'
+      + '<div class="face"><div class="emoji-xl">' + esc(it.e) + '</div><div class="jp-xl">' + esc(it.jp) + '</div></div>'
+      + '<div class="face back"><div class="emoji-lg">' + esc(it.e) + '</div><div class="jp-xl">' + esc(it.jp) + '</div><div class="romaji">' + esc(it.ro) + '</div><div style="font-size:20px;font-weight:700;margin-top:8px">' + esc(it.mean) + '</div></div>'
+      + '</div></div><div style="text-align:center;margin-bottom:14px"><button class="speakbtn" data-act="say" data-k="' + R.card + '" aria-label="play">🔊</button></div>'
+      + '<div class="row"><button class="btn outline" data-act="card" data-d="-1" ' + (R.card === 0 ? 'disabled' : '') + '>' + t('prevCard') + '</button>'
+      + (last ? '<button class="btn" data-act="next">' + t('finishDeck') + '</button>' : '<button class="btn ghost" data-act="card" data-d="1">' + t('nextCard') + '</button>') + '</div>';
+  }
+  if (st.t === 'listen') {
+    return head + '<div class="prompt">' + t('pListen') + '</div>'
+      + '<div style="text-align:center;margin:8px 0 18px"><button class="speakbtn big" data-act="say" data-k="' + st.a + '" id="listenBtn" aria-label="play">🔊</button><div class="muted" style="margin-top:6px">' + t('listenAgain') + '</div></div>'
+      + '<div class="grid2">' + st.o.map(o => '<button class="opt pic' + optCls(o, st) + '" data-act="ans" data-o="' + o + '" ' + (R.answered ? 'disabled' : '') + ' aria-label="' + esc(R.items[o].mean) + '">' + esc(R.items[o].e) + '</button>').join('') + '</div>'
+      + feedback(st) + nextBtn(R.answered);
+  }
+  if (st.t === 'quiz') {
+    const it = R.items[st.a];
+    return head + '<div class="prompt">' + t('pQuiz') + '</div>'
+      + '<div class="card" style="text-align:center"><div class="jp-xl" style="margin:0">' + esc(it.jp) + '</div><div class="romaji">' + esc(it.ro) + '</div><button class="btn ghost sm" data-act="say" data-k="' + st.a + '" style="margin-top:8px">🔊</button></div>'
+      + '<div class="list">' + st.o.map(o => '<button class="opt' + optCls(o, st) + '" data-act="ans" data-o="' + o + '" ' + (R.answered ? 'disabled' : '') + '>' + esc(R.items[o].mean) + '</button>').join('') + '</div>'
+      + feedback(st) + nextBtn(R.answered);
+  }
+  if (st.t === 'match') {
+    const all = R.matched.length === st.p.length;
+    const L = st.p.map(o => '<button class="opt pic' + (R.matched.includes(o) ? ' done' : (R.sel === o ? ' sel' : '')) + '" data-act="mL" data-o="' + o + '" ' + (R.matched.includes(o) ? 'disabled' : '') + ' style="min-height:72px;font-size:40px">' + esc(R.items[o].e) + '</button>').join('');
+    const Rr = st.r.map(o => '<button class="opt' + (R.matched.includes(o) ? ' done' : '') + '" data-act="mR" data-o="' + o + '" ' + (R.matched.includes(o) ? 'disabled' : '') + ' style="min-height:72px;font-weight:700">' + esc(R.items[o].jp) + '</button>').join('');
+    return head + '<div class="prompt">' + t('pMatch') + '</div><div class="matchcols"><div>' + L + '</div><div>' + Rr + '</div></div>'
+      + (all ? '<div class="feedback ' + (R.miss === 0 ? 'ok' : 'ng') + '">' + (R.miss === 0 ? t('check') : '✓ ' + R.miss + ' miss') + '</div>' : '')
+      + nextBtn(all);
+  }
+  if (st.t === 'speak') {
+    return head + '<div class="prompt">' + t('pSpeak') + '</div>' + speakPanel(R.items[st.a], st.a, R.recUrl) + nextBtn(true);
+  }
+  return '';
+}
+function optCls(o, st) {
+  const R = S.run; if (!R.answered) return '';
+  if (o === st.a) return ' correct';
+  if (o === R.sel) return ' wrong';
+  return '';
+}
+function feedback(st) {
+  const R = S.run; if (!R.answered) return '<div class="feedback"></div>';
+  const it = R.items[st.a];
+  const ans = st.t === 'listen' ? it.e + ' ' + it.jp : it.mean;
+  return R.sel === st.a ? '<div class="feedback ok">⭕ ' + t('check') + '</div>' : '<div class="feedback ng">❌ ' + esc(t('wrong', { a: ans })) + '</div>';
+}
+function speakPanel(it, k, recUrl) {
+  const rec = Rec.active();
+  return '<div class="card" style="text-align:center"><div class="emoji-lg">' + esc(it.e) + '</div><div class="jp-xl">' + esc(it.jp) + '</div><div class="romaji">' + esc(it.ro) + ' ・ ' + esc(it.mean) + '</div>'
+    + '<div class="recctl">'
+    + '<button class="roundbtn" data-act="say" data-k="' + k + '"><span class="c">🔊</span>' + t('model') + '</button>'
+    + '<button class="roundbtn rec' + (rec ? ' on' : '') + '" data-act="rec" id="recBtn"><span class="c">' + (rec ? '■' : '●') + '</span>' + (rec ? t('stop') : t('record')) + '</button>'
+    + '<button class="roundbtn" data-act="playMine" id="mineBtn" ' + (recUrl ? '' : 'disabled') + '><span class="c">▶</span>' + t('mine') + '</button>'
+    + '<button class="roundbtn" data-act="compare" data-k="' + k + '" id="cmpBtn" ' + (recUrl ? '' : 'disabled') + '><span class="c">⇄</span>' + t('compare') + '</button>'
+    + '</div></div><div class="note">🔒 ' + t('recNote') + '</div><audio id="mineAudio"' + (recUrl ? ' src="' + recUrl + '"' : '') + '></audio>';
+}
+function viewResult() {
+  const R = S.run; const p = lp(R.lesson.id);
+  const graded = R.steps.filter(s => GRADED[s.t]).length;
+  const ratio = graded ? R.lastCorrect / graded : 1;
+  const stars = ratio >= .9 ? 3 : ratio >= .6 ? 2 : 1;
+  const hasNext = R.i + 1 < S.content.length;
+  return '<div class="hero" style="padding-top:20px"><div class="big">🎉</div><h1>' + t('resultT') + '</h1><p>' + esc(lessonTitle(R.lesson)) + '</p></div>'
+    + '<div class="stars">' + '⭐'.repeat(stars) + '<span style="opacity:.2">' + '⭐'.repeat(3 - stars) + '</span></div>'
+    + '<p style="text-align:center;font-weight:700;font-size:18px" id="scoreLine">' + t('score', { c: R.lastCorrect, t: graded }) + '</p>'
+    + '<div style="height:16px"></div>'
+    + (hasNext ? '<button class="btn full" data-act="openNext" style="margin-bottom:10px">' + t('nextLesson') + ' →</button>' : '')
+    + '<button class="btn ghost full" data-act="home">' + t('toHome') + '</button>';
+}
+function stepDone(correct) {
+  const R = S.run; const p = lp(R.lesson.id);
+  if (correct) p.correct++;
+  p.step++;
+  R.answered = false; R.sel = null; R.matched = []; R.miss = 0; R.card = 0; R.flipped = false;
+  if (R.recUrl) { URL.revokeObjectURL(R.recUrl); R.recUrl = null; }
+  if (p.step >= R.steps.length) {
+    const graded = R.steps.filter(s => GRADED[s.t]).length;
+    R.lastCorrect = p.correct;
+    if (!p.best || p.correct >= p.best.c) p.best = { c: p.correct, t: graded };
+    p.done = true; R.result = true;   // done＝一度でも完了（次のレッスンの鍵）。復習用に位置は最初へ戻す
+    p.step = 0; p.correct = 0;
+  }
+  saveUsers();
+  render();
+  $('#screens').scrollTop = 0;
+}
+
+// ---------- 発音タブ ----------
+let practiceSel = null; let practiceRec = null;
+function allWords() { const out = []; S.content.forEach(l => (l.items || []).forEach(it => it.jp && out.push(it))); return out; }
+function viewPractice() {
+  const ws = allWords(); if (!ws.length) return '<p class="muted">—</p>';
+  if (practiceSel == null || practiceSel >= ws.length) practiceSel = 0;
+  return '<h1>' + t('practiceT') + '</h1><p class="muted">' + t('practiceSub') + '</p>'
+    + speakPanel(ws[practiceSel], 'p' + practiceSel, practiceRec)
+    + '<div class="wordlist">' + ws.map((w, i) => '<button class="opt' + (i === practiceSel ? ' sel' : '') + '" data-act="pick" data-i="' + i + '"><span class="e">' + esc(w.e) + '</span>' + esc(w.jp) + '</button>').join('') + '</div>';
+}
+
+// ---------- 進度タブ ----------
+function viewProgress() {
+  const rows = S.content.map((l, i) => {
+    const n = buildSteps(l).steps.length; const p = prog().lessons[l.id];
+    const d = p ? (p.done ? n : Math.min(p.step, n)) : 0;
+    const st = lessonState(i);
+    return '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><b>' + esc(l.icon || '') + ' ' + esc(lessonTitle(l)) + '</b>'
+      + (st === 'done' ? '<span class="tag ok">✓ ' + t('done') + '</span>' : st === 'locked' ? '<span class="tag lock">🔒</span>' : '<span class="tag go">' + t(st === 'inprog' ? 'inprog' : 'newL') + '</span>') + '</div>'
+      + '<div class="progress"><i style="width:' + Math.round(d / Math.max(n, 1) * 100) + '%"></i></div>'
+      + '<div class="muted">' + t('stepsDone', { d, a: n }) + (p && p.best ? ' ・ ' + t('best', { c: p.best.c, t: p.best.t }) : '') + '</div></div>';
+  }).join('');
+  return '<h1>' + t('progT') + '</h1><p class="muted">' + t('learner') + '：' + esc(S.user) + '</p>' + rows
+    + '<div class="row" style="margin-top:8px"><button class="btn outline" data-act="logout">' + t('logout') + '</button><button class="btn danger" data-act="resetProg">' + t('resetProg') + '</button></div>';
+}
+
+// ---------- 教師タブ ----------
+function viewTeacher() {
+  const list = S.content.map((l, i) => '<div class="card lesson"><div class="ico">' + esc(l.icon || '📘') + '</div><div class="info"><div class="name">' + (i + 1) + '. ' + esc(lessonTitle(l)) + '</div><div class="muted">' + t('words', { n: (l.items || []).length }) + ' ・ ' + buildSteps(l).steps.length + ' steps</div></div><button class="btn ghost sm" data-act="editL" data-i="' + i + '">' + t('edit') + '</button></div>').join('');
+  return '<h1>' + t('teachT') + '</h1><p class="muted">' + t('teachSub') + '</p><div style="height:6px"></div>' + list
+    + '<button class="btn full" data-act="addL">' + t('addLesson') + '</button>'
+    + '<h2>' + t('jsonT') + '</h2><p class="muted">' + t('jsonSub') + '</p>'
+    + '<textarea id="jsonBox" rows="7" style="font-family:monospace;font-size:12px"></textarea>'
+    + '<div class="row" style="margin-top:8px"><button class="btn ghost sm" data-act="export">' + t('exportB') + '</button><button class="btn sm" data-act="import">' + t('importB') + '</button></div>'
+    + '<div style="height:10px"></div><button class="btn danger full sm" data-act="resetContent">' + t('resetB') + '</button>';
+}
+function viewEdit() {
+  const E = S.editing; const l = E.data;
+  const items = l.items.map((it, k) => '<div class="item-edit" data-k="' + k + '">'
+    + '<div class="r"><input type="text" class="emo" data-f="e" value="' + esc(it.e) + '" aria-label="' + t('fE') + '" maxlength="8"><input type="text" data-f="jp" value="' + esc(it.jp) + '" placeholder="' + t('fJp') + '"><input type="text" data-f="ro" value="' + esc(it.ro) + '" placeholder="' + t('fRo') + '"></div>'
+    + '<div class="r2"><input type="text" data-f="mean" value="' + esc(it.mean) + '" placeholder="' + t('fMean') + '"></div>'
+    + '<div class="acts"><button class="btn ghost sm" data-act="eSay" data-k="' + k + '">🔊 ' + (it.audio ? t('hasRec') : t('tts')) + '</button>'
+    + '<button class="btn sm' + (E.recK === k ? ' pink' : ' outline') + '" data-act="eRec" data-k="' + k + '">🎙 ' + (E.recK === k ? t('stop') : t('recModel')) + '</button>'
+    + (it.audio ? '<button class="btn outline sm" data-act="eClr" data-k="' + k + '">' + t('clearModel') + '</button>' : '')
+    + '<span style="flex:1"></span><button class="btn danger sm" data-act="eDel" data-k="' + k + '">' + t('del') + '</button></div></div>').join('');
+  return '<button class="back" data-act="eBack">← ' + t('cancel') + '</button><h1>' + t('edit') + '：' + esc(lessonTitle(l)) + '</h1>'
+    + '<div class="card"><div class="item-edit" style="border:0;padding:0;margin:0"><div class="r"><input type="text" class="emo" id="eIcon" value="' + esc(l.icon) + '" aria-label="' + t('iconL') + '" maxlength="8"><input type="text" id="eTja" value="' + esc(l.title.ja) + '" placeholder="' + t('titleJa') + '"><input type="text" id="eTen" value="' + esc(l.title.en) + '" placeholder="' + t('titleEn') + '"></div></div></div>'
+    + '<h2>' + t('items') + '</h2>' + items + '<button class="btn ghost full" data-act="eAdd">' + t('addItem') + '</button>'
+    + '<h2>' + t('actsL') + '</h2><div class="card toggles">' + ACT_KEYS.map(a => '<label><input type="checkbox" data-act-key="' + a + '" ' + (l.acts[a] ? 'checked' : '') + '>' + t(ACT_LABEL[a]) + '</label>').join('') + '</div>'
+    + '<button class="btn full" data-act="eSave" style="margin-top:6px">' + t('save') + '</button>'
+    + (E.i != null ? '<div style="height:10px"></div><button class="btn danger full sm" data-act="eDelL">' + t('delLesson') + '</button>' : '');
+}
+function readEditForm() {
+  const E = S.editing; if (!E) return;
+  const sc = $('#screens');
+  const ic = $('#eIcon', sc); if (!ic) return;
+  E.data.icon = ic.value.trim() || '📘';
+  E.data.title.ja = $('#eTja', sc).value.trim(); E.data.title.en = $('#eTen', sc).value.trim();
+  sc.querySelectorAll('.item-edit[data-k]').forEach(box => {
+    const it = E.data.items[+box.dataset.k]; if (!it) return;
+    box.querySelectorAll('input[data-f]').forEach(inp => { it[inp.dataset.f] = inp.value.trim(); });
+  });
+  sc.querySelectorAll('input[data-act-key]').forEach(cb => { E.data.acts[cb.dataset.actKey] = cb.checked; });
+}
+function blobToDataUrl(blob) { return new Promise(res => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(blob); }); }
+
+// ---------- 操作 ----------
+function bind(root) { root.querySelectorAll('[data-act]').forEach(el => { el.onclick = ev => { ev.stopPropagation(); act(el.dataset.act, el); }; }); }
+async function act(a, el) {
+  const R = S.run;
+  switch (a) {
+    case 'lang': if (S.editing) readEditForm(); S.lang = S.lang === 'ja' ? 'en' : 'ja'; LS.set('ng_lang', S.lang); render(); break;
+    case 'login': {
+      const n = ($('#nameIn').value || '').trim();
+      if (!n) { $('#nameIn').focus(); return; }
+      S.user = n; prog(); saveUsers(); S.tab = 'lessons'; render(); break;
+    }
+    case 'loginAs': S.user = el.dataset.name; saveUsers(); S.tab = 'lessons'; render(); break;
+    case 'logout': S.user = null; S.run = null; saveUsers(); render(); break;
+    case 'resetProg': S.users[S.user] = { lessons: {}, last: null, created: Date.now() }; saveUsers(); render(); break;
+    case 'tab': if (Rec.active()) Rec.stop(); S.tab = el.dataset.tab; S.editing = null; render(); break;
+    case 'open': openLesson(+el.dataset.i); break;
+    case 'openNext': { const i = R.i + 1; S.run = null; openLesson(i); break; }
+    case 'home': S.run = null; S.tab = 'lessons'; render(); break;
+    case 'quit': if (Rec.active()) Rec.stop(); if (R && !R.result) toast(t('saved')); S.run = null; render(); break;
+    case 'flip': R.flipped = !R.flipped; $('#flash').classList.toggle('flipped', R.flipped); break;
+    case 'card': R.card = Math.max(0, Math.min(R.items.length - 1, R.card + (+el.dataset.d))); R.flipped = false; render(); break;
+    case 'say': {
+      const k = el.dataset.k;
+      const it = String(k).startsWith('p') ? allWords()[+k.slice(1)] : (S.run ? S.run.items[+k] : null);
+      if (it) { el.classList.add('playing'); playItem(it, () => el.classList.remove('playing')); }
+      break;
+    }
+    case 'ans': {
+      if (R.answered) return;
+      R.sel = +el.dataset.o; R.answered = true; render(); break;
+    }
+    case 'next': {
+      const st = R.steps[lp(R.lesson.id).step];
+      const ok = st.t === 'match' ? R.miss === 0 : (GRADED[st.t] ? R.sel === st.a : false);
+      stepDone(ok); break;
+    }
+    case 'mL': R.sel = +el.dataset.o; render(); break;
+    case 'mR': {
+      if (R.sel == null) { toast(S.lang === 'ja' ? '先に絵を選んでください' : 'Pick a picture first'); return; }
+      const o = +el.dataset.o;
+      if (o === R.sel) { R.matched.push(o); R.sel = null; render(); }
+      else { R.miss++; el.classList.add('wrong'); setTimeout(() => el.classList.remove('wrong'), 450); }
+      break;
+    }
+    case 'rec': {
+      if (Rec.active()) { Rec.stop(); return; }
+      const inPractice = !S.run;
+      try {
+        await Rec.start(blob => {
+          const url = URL.createObjectURL(blob);
+          if (inPractice) { if (practiceRec) URL.revokeObjectURL(practiceRec); practiceRec = url; }
+          else if (S.run) { if (S.run.recUrl) URL.revokeObjectURL(S.run.recUrl); S.run.recUrl = url; }
+          render();
+        }, 5000);
+        render();
+      } catch (e) { toast(t('micNg')); }
+      break;
+    }
+    case 'playMine': { const au = $('#mineAudio'); if (au && au.src) { au.currentTime = 0; au.play().catch(() => {}); } break; }
+    case 'compare': {
+      const k = el.dataset.k;
+      const it = String(k).startsWith('p') ? allWords()[+k.slice(1)] : S.run.items[+k];
+      playItem(it, () => { const au = $('#mineAudio'); if (au && au.src) { au.currentTime = 0; au.play().catch(() => {}); } });
+      break;
+    }
+    case 'pick': if (Rec.active()) Rec.stop(); practiceSel = +el.dataset.i; if (practiceRec) { URL.revokeObjectURL(practiceRec); practiceRec = null; } render(); break;
+    // 教師
+    case 'editL': { const i = +el.dataset.i; S.editing = { i, data: JSON.parse(JSON.stringify(S.content[i])), recK: null }; render(); break; }
+    case 'addL': S.editing = { i: null, data: { id: 'l' + Date.now().toString(36), icon: '📘', title: { ja: t('newLessonTitle'), en: 'New lesson' }, acts: { flash: true, listen: true, quiz: true, match: true, speak: true }, items: [{ e: '', jp: '', ro: '', mean: '' }, { e: '', jp: '', ro: '', mean: '' }] }, recK: null }; render(); break;
+    case 'eBack': if (Rec.active()) Rec.stop(); S.editing = null; render(); break;
+    case 'eAdd': readEditForm(); S.editing.data.items.push({ e: '', jp: '', ro: '', mean: '' }); render(); break;
+    case 'eDel': readEditForm(); S.editing.data.items.splice(+el.dataset.k, 1); render(); break;
+    case 'eSay': readEditForm(); { const it = S.editing.data.items[+el.dataset.k]; if (it && it.jp) playItem(it); } break;
+    case 'eClr': readEditForm(); delete S.editing.data.items[+el.dataset.k].audio; render(); break;
+    case 'eRec': {
+      readEditForm(); const k = +el.dataset.k;
+      if (Rec.active()) { Rec.stop(); return; }
+      try {
+        S.editing.recK = k;
+        await Rec.start(async blob => {
+          const url = await blobToDataUrl(blob);
+          if (S.editing && S.editing.data.items[k]) S.editing.data.items[k].audio = url;
+          if (S.editing) S.editing.recK = null;
+          render();
+        }, 4000);
+        toast(t('modelRecording')); render();
+      } catch (e) { S.editing.recK = null; toast(t('micNg')); render(); }
+      break;
+    }
+    case 'eSave': {
+      readEditForm(); const E = S.editing; const d = E.data;
+      d.items = d.items.filter(it => it.jp);
+      if (d.items.length < 2) { toast(t('needItems')); render(); return; }
+      if (!d.title.ja && !d.title.en) d.title.ja = t('newLessonTitle');
+      if (E.i == null) S.content.push(d); else S.content[E.i] = d;
+      if (!saveContent()) return;
+      S.editing = null; toast(t('savedL')); render(); break;
+    }
+    case 'eDelL': if (confirm(t('confirmDel'))) { S.content.splice(S.editing.i, 1); saveContent(); S.editing = null; render(); } break;
+    case 'export': $('#jsonBox').value = JSON.stringify(S.content.map(l => ({ ...l, items: l.items.map(({ audio, ...rest }) => rest) })), null, 2); break;
+    case 'import': {
+      try {
+        const d = JSON.parse($('#jsonBox').value);
+        if (!Array.isArray(d) || !d.every(l => l && l.id && l.title && Array.isArray(l.items))) throw new Error('shape');
+        d.forEach(l => { l.acts = l.acts || { flash: true, listen: true, quiz: true, match: true, speak: true }; l.icon = l.icon || '📘'; l.items.forEach(it => { it.e = it.e || '❓'; it.ro = it.ro || ''; it.mean = it.mean || ''; }); });
+        S.content = d; saveContent(); toast(t('imported')); render();
+      } catch (e) { toast(t('badJson')); }
+      break;
+    }
+    case 'resetContent': if (confirm(t('confirmReset'))) { S.content = JSON.parse(JSON.stringify(SAMPLE)); saveContent(); render(); } break;
+  }
+}
+render();
+</script>
+</body>
+</html>
